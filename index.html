@@ -60,7 +60,6 @@
   }
   input:focus,select:focus,textarea:focus{border-color:var(--sommergruen); box-shadow:0 0 0 3px rgba(62,130,44,.16);}
   textarea{min-height:110px; resize:vertical;}
-  /* Upload */
   .drop{
     border:2px dashed #b9c6a8; border-radius:12px; padding:26px 14px; text-align:center;
     cursor:pointer; transition:.2s; color:var(--muted); font-size:.9rem; background:#fbfdf9;
@@ -76,8 +75,8 @@
     position:absolute; top:4px; right:4px; width:22px; height:22px; border:none; border-radius:50%;
     background:rgba(45,42,38,.75); color:#fff; cursor:pointer; font-size:.8rem; line-height:1;
   }
-  .hint{font-size:.75rem; color:var(--muted); margin-top:6px;}
-  .check{display:flex; gap:10px; align-items:flex-start; font-size:.82rem; color:var(--muted); margin:4px 0 18px;}
+  .hint{font-size:.78rem; color:var(--muted); margin-top:6px;}
+  .check{display:flex; gap:10px; align-items:flex-start; font-size:.82rem; color:var(--muted); margin:4px 0 10px;}
   .check input{width:18px; height:18px; margin-top:2px; accent-color:var(--sommergruen); flex:none;}
   button.submit{
     width:100%; padding:14px; border:none; border-radius:12px; cursor:pointer;
@@ -91,13 +90,14 @@
   .status{margin-top:14px; text-align:center; font-size:.9rem; min-height:1.4em;}
   .status.ok{color:var(--ok);} .status.err{color:var(--err);}
   .success{display:none; text-align:center; padding:40px 10px;}
-  .success .big{font-size:3rem; margin-bottom:10px;}
   .success h2{font-size:1.3rem; margin-bottom:8px; color:var(--forstgruen);}
   .success p{color:var(--muted); font-size:.92rem;}
   .stripe{
     height:6px; border-radius:3px; margin-bottom:22px;
     background:linear-gradient(90deg,var(--fruehlingsgruen),var(--sommergruen),var(--forstgruen));
   }
+  .privacy-note{font-size:.78rem; color:var(--muted); text-align:center; margin-top:12px;}
+  .privacy-note a{color:var(--sommergruen); text-decoration:underline;}
 </style>
 </head>
 <body>
@@ -109,57 +109,52 @@
 
   <div class="card">
     <div class="stripe"></div>
-    <form id="form" novalidate>
+    <form id="form" name="beitrag-einreichen" method="POST" data-netlify="true" enctype="multipart/form-data" novalidate>
+      <input type="hidden" name="form-name" value="beitrag-einreichen">
       <div class="grid">
-        <div class="field">
-          <label for="name">Dein Name <b>*</b></label>
-          <input id="name" name="Name" required placeholder="Vor- und Nachname">
-        </div>
-        <div class="field">
-          <label for="email">Deine E-Mail <b>*</b></label>
-          <input id="email" name="E-Mail" type="email" required placeholder="name@lfoa-mv.de">
-        </div>
         <div class="field full">
           <label for="titel">Titel / Thema <b>*</b></label>
-          <input id="titel" name="Titel" required placeholder="Worum geht es in Kürze?">
+          <input id="titel" name="titel" required placeholder="Worum geht es in Kürze?">
         </div>
         <div class="field full">
           <label for="text">Textvorschlag / Beschreibung <b>*</b></label>
-          <textarea id="text" name="Textvorschlag" required placeholder="Was soll im Beitrag stehen? Wichtige Fakten, Termine, Zitate…"></textarea>
+          <textarea id="text" name="text" required placeholder="Was soll im Beitrag stehen? Wichtige Fakten, Termine, Zitate..."></textarea>
         </div>
         <div class="field">
           <label for="termin">Wunsch-Veröffentlichung</label>
-          <input id="termin" name="Wunschtermin" type="date">
+          <input id="termin" name="termin" type="date">
         </div>
         <div class="field">
           <label for="hashtags">Hashtag-Ideen</label>
-          <input id="hashtags" name="Hashtags" placeholder="#wald #forst #team">
+          <input id="hashtags" name="hashtags" placeholder="#wald #forst #team">
         </div>
         <div class="field full">
           <label>Bilder / Videos <b>*</b></label>
           <div class="drop" id="drop">
             <strong>Dateien hierher ziehen</strong> oder klicken zum Auswählen
-            <small>JPG, PNG · bis 10 MB pro Datei</small>
+            <small>JPG, PNG, MP4 · bis 10 MB pro Datei</small>
           </div>
-          <input id="files" type="file" accept="image/*,video/*" multiple>
+          <input id="files" name="dateien" type="file" accept="image/*,video/*" multiple>
           <div class="previews" id="previews"></div>
           <div class="hint" id="count"></div>
         </div>
         <div class="field full">
-          <label class="check" style="font-weight:400; color:var(--muted);">
-            <input type="checkbox" id="ds" required>
+          <label class="check">
+            <input type="checkbox" id="ds" name="ds_consent" required>
             <span>Ich habe die Einwilligung aller abgebildeten Personen zur Veröffentlichung auf Social Media. <b style="color:var(--eichhornorange)">*</b></span>
           </label>
         </div>
       </div>
-      <button class="submit" id="btn" type="submit">Beitrag absenden ✈️</button>
+      <button class="submit" id="btn" type="submit">Beitrag absenden</button>
+      <div class="privacy-note">
+        Weitere Informationen findest du in unserer <a href="/datenschutz" target="_blank">Datenschutzerklärung</a>.
+      </div>
       <div class="status" id="status"></div>
     </form>
 
     <div class="success" id="success">
-      <div class="big">🎉</div>
-      <h2>Danke, dein Beitrag ist eingereicht!</h2>
-      <p>Die ÖÄ hat deinen Beitragsvorschlag mit allen Infos und Bildern erhalten<br>und meldet sich bei Rückfragen bei dir.</p>
+      <h2>Vielen Dank!</h2>
+      <p>Dein Beitrag wurde eingereicht. Die ÖÄ hat deinen Beitragsvorschlag mit allen Angaben und Dateien erhalten.</p>
       <br>
       <button class="submit" onclick="location.reload()" style="max-width:280px;">Weiteren Beitrag einreichen</button>
     </div>
@@ -167,11 +162,6 @@
 </div>
 
 <script>
-/* ============================================================
-   HIER DIE E-MAIL DER ÖÄ EINTRAGEN 
-   ============================================================ */
-const ZIEL_EMAIL = "daniel.schuh@lfoa-mv.de";
-
 const form = document.getElementById('form');
 const drop = document.getElementById('drop');
 const fileInput = document.getElementById('files');
@@ -208,7 +198,7 @@ function render(){
       d.innerHTML = '<img src="'+URL.createObjectURL(f)+'">';
     }
     const x = document.createElement('button');
-    x.type = 'button'; x.textContent = '✕'; x.title = 'Entfernen';
+    x.type = 'button'; x.textContent = 'x'; x.title = 'Entfernen';
     x.onclick = () => entfernen(i);
     d.appendChild(x);
     previews.appendChild(d);
@@ -222,30 +212,30 @@ form.addEventListener('submit', async ev => {
   if (!form.reportValidity()) return;
   if (dateien.length === 0){ status.className='status err'; status.textContent = 'Bitte mindestens ein Bild oder Video anhängen.'; return; }
 
-  btn.disabled = true; btn.textContent = 'Wird gesendet…';
+  btn.disabled = true; btn.textContent = 'Wird gesendet...';
 
   const fd = new FormData();
-  fd.append('_subject', '🌲 Neuer Beitragsvorschlag: ' + document.getElementById('titel').value);
-  fd.append('_template', 'table');
-  fd.append('_captcha', 'false');
-  fd.append('Name', document.getElementById('name').value);
-  fd.append('E-Mail', document.getElementById('email').value);
-  fd.append('Titel', document.getElementById('titel').value);
-  fd.append('Textvorschlag', document.getElementById('text').value);
-  fd.append('Wunschtermin', document.getElementById('termin').value || '–');
-  fd.append('Hashtags', document.getElementById('hashtags').value || '–');
-  dateien.forEach(f => fd.append('attachment', f));
+  fd.append('form-name', 'beitrag-einreichen');
+  fd.append('titel', document.getElementById('titel').value);
+  fd.append('text', document.getElementById('text').value);
+  fd.append('termin', document.getElementById('termin').value || '-');
+  fd.append('hashtags', document.getElementById('hashtags').value || '-');
+  fd.append('ds_consent', document.getElementById('ds').checked ? 'Ja' : 'Nein');
+
+  dateien.forEach((f) => {
+    fd.append('dateien', f, f.name);
+  });
 
   try {
-    const res = await fetch('https://formsubmit.co/ajax/' + ZIEL_EMAIL, { method:'POST', body: fd });
+    const res = await fetch('/', { method:'POST', body: fd });
     if (!res.ok) throw new Error();
     form.style.display = 'none';
     document.getElementById('success').style.display = 'block';
     window.scrollTo({top:0, behavior:'smooth'});
   } catch(e) {
     status.className='status err';
-    status.textContent = 'Senden fehlgeschlagen – bitte erneut versuchen oder die ÖÄ direkt kontaktieren.';
-    btn.disabled = false; btn.textContent = 'Beitrag absenden ✈️';
+    status.textContent = 'Senden fehlgeschlagen – bitte erneut versuchen.';
+    btn.disabled = false; btn.textContent = 'Beitrag absenden';
   }
 });
 </script>
