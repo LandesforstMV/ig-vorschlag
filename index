@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beitrag einreichen – ÖÄ Social Media</title>
+<style>
+  :root{
+    --forstgruen:#154734;   /* Primärfarbe */
+    --sommergruen:#3e822c;  /* Primärfarbe */
+    --fruehlingsgruen:#91ae2d; /* Primärfarbe */
+    --schwarz:#2d2a26;      /* Primärfarbe */
+    --hellblau:#87b4c3;     /* Sekundärfarbe */
+    --sandgelb:#f6d44d;     /* Sekundärfarbe */
+    --eichhornorange:#c36015; /* Sekundärfarbe */
+    --rindenbraun:#78482b;  /* Sekundärfarbe */
+    --bg:#f4f6f0;
+    --card:#ffffff;
+    --text:#2d2a26;
+    --muted:#6b675f;
+    --ok:#3e822c; --err:#c0392b;
+    --radius:14px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(900px 400px at 85% -10%, rgba(145,174,45,.18) 0%, transparent 60%),
+      radial-gradient(700px 400px at 0% 110%, rgba(21,71,52,.10) 0%, transparent 60%),
+      var(--bg);
+    color:var(--text); min-height:100vh; padding:24px 14px 60px;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .wrap{width:100%; max-width:620px;}
+  header{text-align:center; margin-bottom:22px;}
+  .logo{
+    display:inline-flex; align-items:center; gap:10px;
+    color:var(--forstgruen);
+    font-size:1.6rem; font-weight:800; letter-spacing:.3px;
+  }
+  .logo .dot{
+    width:14px; height:14px; border-radius:50%;
+    background:linear-gradient(135deg,var(--sommergruen),var(--fruehlingsgruen));
+  }
+  header p{color:var(--muted); font-size:.95rem; margin-top:6px;}
+  .card{
+    background:var(--card); border:1px solid #e2e6da; border-radius:var(--radius);
+    padding:26px 24px; box-shadow:0 10px 35px rgba(21,71,52,.10);
+  }
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media(max-width:560px){.grid{grid-template-columns:1fr;} .card{padding:20px 16px;}}
+  .field{display:flex; flex-direction:column; gap:6px; margin-bottom:16px;}
+  .field.full{grid-column:1/-1;}
+  label{font-size:.85rem; font-weight:600; color:var(--muted);}
+  label b{color:var(--eichhornorange); font-weight:700;}
+  input,select,textarea{
+    background:#fbfdf9; border:1px solid #d5dccb; color:var(--text);
+    border-radius:10px; padding:11px 13px; font-size:.95rem; outline:none; width:100%;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  input:focus,select:focus,textarea:focus{border-color:var(--sommergruen); box-shadow:0 0 0 3px rgba(62,130,44,.16);}
+  textarea{min-height:110px; resize:vertical;}
+  /* Upload */
+  .drop{
+    border:2px dashed #b9c6a8; border-radius:12px; padding:26px 14px; text-align:center;
+    cursor:pointer; transition:.2s; color:var(--muted); font-size:.9rem; background:#fbfdf9;
+  }
+  .drop:hover,.drop.over{border-color:var(--sommergruen); background:rgba(145,174,45,.10); color:var(--text);}
+  .drop strong{color:var(--forstgruen);}
+  .drop small{display:block; margin-top:4px; font-size:.78rem; opacity:.75;}
+  input[type=file]{display:none;}
+  .previews{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;}
+  .thumb{position:relative; width:86px; height:86px; border-radius:10px; overflow:hidden; border:1px solid #d5dccb;}
+  .thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  .thumb button{
+    position:absolute; top:4px; right:4px; width:22px; height:22px; border:none; border-radius:50%;
+    background:rgba(45,42,38,.75); color:#fff; cursor:pointer; font-size:.8rem; line-height:1;
+  }
+  .hint{font-size:.75rem; color:var(--muted); margin-top:6px;}
+  .check{display:flex; gap:10px; align-items:flex-start; font-size:.82rem; color:var(--muted); margin:4px 0 18px;}
+  .check input{width:18px; height:18px; margin-top:2px; accent-color:var(--sommergruen); flex:none;}
+  button.submit{
+    width:100%; padding:14px; border:none; border-radius:12px; cursor:pointer;
+    font-size:1rem; font-weight:700; color:#fff;
+    background:linear-gradient(45deg,var(--forstgruen),var(--sommergruen));
+    transition:transform .12s, opacity .2s, box-shadow .15s;
+    box-shadow:0 4px 14px rgba(21,71,52,.28);
+  }
+  button.submit:hover{transform:translateY(-1px); box-shadow:0 6px 18px rgba(21,71,52,.34);}
+  button.submit:disabled{opacity:.6; cursor:default; transform:none;}
+  .status{margin-top:14px; text-align:center; font-size:.9rem; min-height:1.4em;}
+  .status.ok{color:var(--ok);} .status.err{color:var(--err);}
+  .success{display:none; text-align:center; padding:40px 10px;}
+  .success .big{font-size:3rem; margin-bottom:10px;}
+  .success h2{font-size:1.3rem; margin-bottom:8px; color:var(--forstgruen);}
+  .success p{color:var(--muted); font-size:.92rem;}
+  .stripe{
+    height:6px; border-radius:3px; margin-bottom:22px;
+    background:linear-gradient(90deg,var(--fruehlingsgruen),var(--sommergruen),var(--forstgruen));
+  }
+</style>
+<base target="_blank">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><span class="dot"></span> Beitrag einreichen</div>
+    <p>Beitragsvorschlag an die ÖÄ senden</p>
+  </header>
+
+  <div class="card">
+    <div class="stripe"></div>
+    <form id="form" novalidate>
+      <div class="grid">
+        <div class="field">
+          <label for="name">Dein Name <b>*</b></label>
+          <input id="name" name="Name" required placeholder="Vor- und Nachname">
+        </div>
+        <div class="field">
+          <label for="email">Deine E-Mail <b>*</b></label>
+          <input id="email" name="E-Mail" type="email" required placeholder="name@landesforst.de">
+        </div>
+        <div class="field full">
+          <label for="titel">Titel / Thema <b>*</b></label>
+          <input id="titel" name="Titel" required placeholder="Worum geht es in Kürze?">
+        </div>
+        <div class="field full">
+          <label for="text">Textvorschlag / Beschreibung <b>*</b></label>
+          <textarea id="text" name="Textvorschlag" required placeholder="Was soll im Beitrag stehen? Wichtige Fakten, Termine, Zitate…"></textarea>
+        </div>
+        <div class="field">
+          <label for="termin">Wunsch-Veröffentlichung</label>
+          <input id="termin" name="Wunschtermin" type="date">
+        </div>
+        <div class="field">
+          <label for="hashtags">Hashtag-Ideen</label>
+          <input id="hashtags" name="Hashtags" placeholder="#wald #forst #team">
+        </div>
+        <div class="field full">
+          <label>Bilder / Videos <b>*</b></label>
+          <div class="drop" id="drop">
+            <strong>Dateien hierher ziehen</strong> oder klicken zum Auswählen
+            <small>JPG, PNG, HEIC oder MP4 · bis 10 MB pro Datei</small>
+          </div>
+          <input id="files" type="file" accept="image/*,video/*" multiple>
+          <div class="previews" id="previews"></div>
+          <div class="hint" id="count"></div>
+        </div>
+        <div class="field full">
+          <label class="check" style="font-weight:400; color:var(--muted);">
+            <input type="checkbox" id="ds" required>
+            <span>Ich habe die Einwilligung aller abgebildeten Personen zur Veröffentlichung auf Social Media. <b style="color:var(--eichhornorange)">*</b></span>
+          </label>
+        </div>
+      </div>
+      <button class="submit" id="btn" type="submit">Beitrag absenden ✈️</button>
+      <div class="status" id="status"></div>
+    </form>
+
+    <div class="success" id="success">
+      <div class="big">🎉</div>
+      <h2>Danke, dein Beitrag ist eingereicht!</h2>
+      <p>Die ÖÄ hat deinen Beitragsvorschlag mit allen Infos und Bildern erhalten<br>und meldet sich bei Rückfragen bei dir.</p>
+      <br>
+      <button class="submit" onclick="location.reload()" style="max-width:280px;">Weiteren Beitrag einreichen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+  HIER DIE E-MAIL DER ÖÄ EINTRAGEN
+   ============================================================ */
+const ZIEL_EMAIL = "daniel.schuh@lfoa-mv.de";
+
+const form = document.getElementById('form');
+const drop = document.getElementById('drop');
+const fileInput = document.getElementById('files');
+const previews = document.getElementById('previews');
+const count = document.getElementById('count');
+const status = document.getElementById('status');
+const btn = document.getElementById('btn');
+let dateien = [];
+
+drop.addEventListener('click', () => fileInput.click());
+['dragover','dragenter'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('over'); }));
+['dragleave','drop'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', ev => hinzufuegen(ev.dataTransfer.files));
+fileInput.addEventListener('change', () => { hinzufuegen(fileInput.files); fileInput.value=''; });
+
+function hinzufuegen(liste){
+  for (const f of liste){
+    if (f.size > 10*1024*1024){ alert('"'+f.name+'" ist größer als 10 MB und wird übersprungen.'); continue; }
+    dateien.push(f);
+  }
+  render();
+}
+
+function entfernen(i){ dateien.splice(i,1); render(); }
+
+function render(){
+  previews.innerHTML = '';
+  dateien.forEach((f,i)=>{
+    const d = document.createElement('div');
+    d.className = 'thumb';
+    if (f.type.startsWith('video/')){
+      d.innerHTML = '<video src="'+URL.createObjectURL(f)+'" style="width:100%;height:100%;object-fit:cover;" muted></video>';
+    } else {
+      d.innerHTML = '<img src="'+URL.createObjectURL(f)+'">';
+    }
+    const x = document.createElement('button');
+    x.type = 'button'; x.textContent = '✕'; x.title = 'Entfernen';
+    x.onclick = () => entfernen(i);
+    d.appendChild(x);
+    previews.appendChild(d);
+  });
+  count.textContent = dateien.length ? dateien.length + ' Datei(en) ausgewählt' : '';
+}
+
+form.addEventListener('submit', async ev => {
+  ev.preventDefault();
+  status.className = 'status'; status.textContent = '';
+  if (!form.reportValidity()) return;
+  if (dateien.length === 0){ status.className='status err'; status.textContent = 'Bitte mindestens ein Bild oder Video anhängen.'; return; }
+
+  btn.disabled = true; btn.textContent = 'Wird gesendet…';
+
+  const fd = new FormData();
+  fd.append('_subject', '🌲 Neuer Beitragsvorschlag: ' + document.getElementById('titel').value);
+  fd.append('_template', 'table');
+  fd.append('_captcha', 'false');
+  fd.append('Name', document.getElementById('name').value);
+  fd.append('E-Mail', document.getElementById('email').value);
+  fd.append('Titel', document.getElementById('titel').value);
+  fd.append('Textvorschlag', document.getElementById('text').value);
+  fd.append('Wunschtermin', document.getElementById('termin').value || '–');
+  fd.append('Hashtags', document.getElementById('hashtags').value || '–');
+  dateien.forEach(f => fd.append('attachment', f));
+
+  try {
+    const res = await fetch('https://formsubmit.co/ajax/' + ZIEL_EMAIL, { method:'POST', body: fd });
+    if (!res.ok) throw new Error();
+    form.style.display = 'none';
+    document.getElementById('success').style.display = 'block';
+    window.scrollTo({top:0, behavior:'smooth'});
+  } catch(e) {
+    status.className='status err';
+    status.textContent = 'Senden fehlgeschlagen – bitte erneut versuchen oder die ÖÄ direkt kontaktieren.';
+    btn.disabled = false; btn.textContent = 'Beitrag absenden ✈️';
+  }
+});
+</script>
+</body>
+</html>
