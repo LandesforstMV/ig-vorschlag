@@ -99,6 +99,7 @@
   .privacy-note{font-size:.78rem; color:var(--muted); text-align:center; margin-top:12px;}
   .privacy-note a{color:var(--sommergruen); text-decoration:underline;}
 </style>
+<base target="_blank">
 </head>
 <body>
 <div class="wrap">
@@ -120,13 +121,9 @@
           <label for="text">Textvorschlag / Beschreibung <b>*</b></label>
           <textarea id="text" name="text" required placeholder="Was soll im Beitrag stehen? Wichtige Fakten, Termine, Zitate..."></textarea>
         </div>
-        <div class="field">
+        <div class="field full">
           <label for="termin">Wunsch-Veröffentlichung</label>
           <input id="termin" name="termin" type="date">
-        </div>
-        <div class="field">
-          <label for="hashtags">Hashtag-Ideen</label>
-          <input id="hashtags" name="hashtags" placeholder="#wald #forst #team">
         </div>
         <div class="field full">
           <label>Bilder / Videos <b>*</b></label>
@@ -198,7 +195,7 @@ function render(){
       d.innerHTML = '<img src="'+URL.createObjectURL(f)+'">';
     }
     const x = document.createElement('button');
-    x.type = 'button'; x.textContent = 'x'; x.title = 'Entfernen';
+    x.type = 'button'; x.textContent = '✕'; x.title = 'Entfernen';
     x.onclick = () => entfernen(i);
     d.appendChild(x);
     previews.appendChild(d);
@@ -212,29 +209,30 @@ form.addEventListener('submit', async ev => {
   if (!form.reportValidity()) return;
   if (dateien.length === 0){ status.className='status err'; status.textContent = 'Bitte mindestens ein Bild oder Video anhängen.'; return; }
 
-  btn.disabled = true; btn.textContent = 'Wird gesendet...';
+  btn.disabled = true; btn.textContent = 'Wird gesendet…';
 
   const fd = new FormData();
   fd.append('form-name', 'beitrag-einreichen');
   fd.append('titel', document.getElementById('titel').value);
   fd.append('text', document.getElementById('text').value);
-  fd.append('termin', document.getElementById('termin').value || '-');
-  fd.append('hashtags', document.getElementById('hashtags').value || '-');
+  fd.append('termin', document.getElementById('termin').value || '–');
   fd.append('ds_consent', document.getElementById('ds').checked ? 'Ja' : 'Nein');
-
-  dateien.forEach((f) => {
-    fd.append('dateien', f, f.name);
-  });
+  dateien.forEach((f) => { fd.append('dateien', f, f.name); });
 
   try {
-    const res = await fetch('/', { method:'POST', body: fd });
-    if (!res.ok) throw new Error();
+    // WICHTIG: Accept-Header ist für die Netlify AJAX-Antwort zwingend nötig!
+    const res = await fetch('/', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: fd
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     form.style.display = 'none';
     document.getElementById('success').style.display = 'block';
     window.scrollTo({top:0, behavior:'smooth'});
   } catch(e) {
     status.className='status err';
-    status.textContent = 'Senden fehlgeschlagen – bitte erneut versuchen.';
+    status.textContent = 'Senden fehlgeschlagen – bitte erneut versuchen oder die ÖÄ direkt kontaktieren.';
     btn.disabled = false; btn.textContent = 'Beitrag absenden';
   }
 });
