@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vielen Dank – ÖA Social Media</title>
+<style>
+  :root{
+    --forstgruen:#154734; --sommergruen:#3e822c; --fruehlingsgruen:#91ae2d;
+    --schwarz:#2d2a26; --muted:#6b675f; --bg:#f4f6f0;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(900px 400px at 85% -10%, rgba(145,174,45,.18) 0%, transparent 60%),
+      radial-gradient(700px 400px at 0% 110%, rgba(21,71,52,.10) 0%, transparent 60%),
+      var(--bg);
+    color:var(--schwarz); min-height:100vh; padding:24px 14px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .card{
+    background:#fff; border:1px solid #e2e6da; border-radius:14px;
+    padding:50px 34px; max-width:520px; width:100%; text-align:center;
+    box-shadow:0 10px 35px rgba(21,71,52,.10);
+  }
+  .dot{
+    width:64px; height:64px; margin:0 auto 20px; border-radius:50%;
+    background:linear-gradient(135deg,var(--sommergruen),var(--fruehlingsgruen));
+    display:flex; align-items:center; justify-content:center; color:#fff; font-size:2rem;
+  }
+  h1{color:var(--forstgruen); font-size:1.5rem; margin-bottom:12px;}
+  p{color:var(--muted); font-size:.95rem; line-height:1.6;}
+  a.btn{
+    display:inline-block; margin-top:26px; padding:13px 30px; border-radius:12px;
+    color:#fff; font-weight:700; text-decoration:none;
+    background:linear-gradient(45deg,var(--forstgruen),var(--sommergruen));
+    box-shadow:0 4px 14px rgba(21,71,52,.28);
+  }
+  .stripe{height:6px; border-radius:3px; margin-bottom:26px;
+    background:linear-gradient(90deg,var(--fruehlingsgruen),var(--sommergruen),var(--forstgruen));}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="stripe"></div>
+    <div class="dot">✓</div>
+    <h1>Vielen Dank!</h1>
+    <p>Dein Beitragsvorschlag wurde erfolgreich an die ÖÄ gesendet.<br>
+    Die ÖÄ hat deine Angaben und Dateien erhalten und meldet sich bei Rückfragen bei dir.</p>
+    <a class="btn" href="/">Weiteren Beitrag einreichen</a>
+  </div>
+</body>
+</html>
