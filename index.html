@@ -109,10 +109,14 @@
           <label>Bilder / Videos <b>*</b></label>
           <div class="drop" id="drop">
             <strong>Dateien hierher ziehen</strong> oder klicken zum Auswählen
-            <small>JPG, PNG, MP4 · bis 10 MB pro Datei</small>
+            <small>JPG, PNG, MP4 · max. 5 Dateien · zusammen max. 7 MB</small>
           </div>
-          <!-- KEIN required hier! Das würde Safari/Chrome am unsichtbaren Feld störrisch blockieren. -->
-          <input id="files" name="dateien" type="file" accept="image/*,video/*" multiple>
+          <!-- Netlify erlaubt nur EINE Datei pro Feld -> 5 einzelne Felder, JS verteilt die Auswahl -->
+          <input id="files" name="datei1" type="file" accept="image/*,video/*">
+          <input name="datei2" type="file" accept="image/*,video/*" class="hidden-file" aria-hidden="true" tabindex="-1">
+          <input name="datei3" type="file" accept="image/*,video/*" class="hidden-file" aria-hidden="true" tabindex="-1">
+          <input name="datei4" type="file" accept="image/*,video/*" class="hidden-file" aria-hidden="true" tabindex="-1">
+          <input name="datei5" type="file" accept="image/*,video/*" class="hidden-file" aria-hidden="true" tabindex="-1">
           <div class="previews" id="previews"></div>
           <div class="hint" id="count"></div>
         </div>
@@ -133,17 +137,24 @@
 </div>
 
 <script>
-/* Nur Vorschau/Drag&Drop + Datei-Prüfung vor dem Absenden.
-   Das Absenden selbst läuft ganz klassisch (kein AJAX). */
+/* Mehrere Dateien werden auf mehrere einzelne Datei-Felder verteilt,
+   weil Netlify pro Feld nur eine Datei akzeptiert.
+   Gesamtgröße-Limit: Netlify erlaubt max. 8 MB pro Request -> wir prüfen auf 7 MB. */
+const MAX_DATEIEN = 5;
+const MAX_GESAMT_MB = 7;
+const MAX_GESAMT = MAX_GESAMT_MB * 1024 * 1024;
+
 const form = document.getElementById('form');
 const drop = document.getElementById('drop');
 const fileInput = document.getElementById('files');
+const fileFelder = [fileInput, ...document.querySelectorAll('.hidden-file')];
 const previews = document.getElementById('previews');
 const count = document.getElementById('count');
 const statusEl = document.getElementById('status');
 let dateien = [];
 
 const dataTransferOk = (typeof DataTransfer !== 'undefined');
+const MB = b => (b/1024/1024).toFixed(1).replace('.', ',');
 
 drop.addEventListener('click', () => fileInput.click());
 ['dragover','dragenter'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('over'); }));
@@ -156,22 +167,28 @@ fileInput.addEventListener('change', () => {
 
 function hinzufuegen(liste){
   for (const f of liste){
-    if (f.size > 10*1024*1024){ alert('"'+f.name+'" ist größer als 10 MB und wird übersprungen.'); continue; }
-    // Duplikate (z. B. bei Klick-Auswahl, wenn das Feld nicht geleert werden konnte) vermeiden
-    if (![...dateien].some(d => d.name === f.name && d.size === f.size)) dateien.push(f);
+    if (dateien.length >= MAX_DATEIEN){
+      alert('Maximal ' + MAX_DATEIEN + ' Dateien möglich.');
+      break;
+    }
+    // Duplikate vermeiden
+    if ([...dateien].some(d => d.name === f.name && d.size === f.size)) continue;
+    dateien.push(f);
   }
   render();
 }
 
 function entfernen(i){ dateien.splice(i,1); render(); }
 
-/* Überträgt Dateien aus dem Array ins echte Feld, damit sie mit dem klassischen Submit mitgehen */
+/* Verteilt die Dateien aus dem Array auf die einzelnen Datei-Felder (1 Datei pro Feld) */
 function syncFiles(){
   if (!dataTransferOk) return false;
   try {
-    const dt = new DataTransfer();
-    dateien.forEach(f => dt.items.add(f));
-    fileInput.files = dt.files;
+    fileFelder.forEach((feld, idx) => {
+      const dt = new DataTransfer();
+      if (dateien[idx]) dt.items.add(dateien[idx]);
+      feld.files = dt.files;
+    });
     return true;
   } catch(e) { return false; }
 }
@@ -192,22 +209,32 @@ function render(){
     d.appendChild(x);
     previews.appendChild(d);
   });
-  count.textContent = dateien.length ? dateien.length + ' Datei(en) ausgewählt' : '';
+  const gesamt = dateien.reduce((s,f) => s + f.size, 0);
+  count.textContent = dateien.length
+    ? dateien.length + ' Datei(en) · ' + MB(gesamt) + ' MB von max. ' + MAX_GESAMT_MB + ' MB'
+    : '';
   syncFiles();
 }
 
-/* VOR dem Absenden prüfen: Dateien vorhanden? Dann nativen Submit weiterlaufen lassen. */
+/* VOR dem Absenden prüfen, dann nativen Submit weiterlaufen lassen */
 form.addEventListener('submit', function(ev){
   statusEl.textContent = '';
   if (dateien.length === 0 && (!fileInput.files || fileInput.files.length === 0)){
     ev.preventDefault();
     statusEl.textContent = '⚠️ Bitte mindestens ein Bild oder Video anhängen.';
-    document.getElementById('drop').scrollIntoView({behavior:'smooth', block:'center'});
+    drop.scrollIntoView({behavior:'smooth', block:'center'});
     return;
   }
-  if (!syncFiles() && (dateien.length > 0 && (!fileInput.files || fileInput.files.length === 0))){
+  const gesamt = dateien.reduce((s,f) => s + f.size, 0);
+  if (gesamt > MAX_GESAMT){
     ev.preventDefault();
-    statusEl.textContent = '⚠️ Dein Browser unterstützt Drag & Drop hier nicht – bitte Datei per Klick im Feld auswählen.';
+    statusEl.textContent = '⚠️ Gesamtgröße ' + MB(gesamt) + ' MB – maximal ' + MAX_GESAMT_MB + ' MB möglich. Bitte Dateien verkleinern oder weniger auswählen.';
+    drop.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  if (!syncFiles() && (dateien.length > 1 || dateien.length > 0 && (!fileInput.files || fileInput.files.length === 0))){
+    ev.preventDefault();
+    statusEl.textContent = '⚠️ Dein Browser unterstützt Mehrfachauswahl hier nicht – bitte Dateien einzeln per Klick im Feld auswählen.';
     return;
   }
   document.getElementById('btn').disabled = true;
