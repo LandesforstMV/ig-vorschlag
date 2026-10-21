@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Instagram Beitrag einreichen – ÖA Social Media</title>
+<title>Instagram Beitrag einreichen - OEA Social Media</title>
 <style>
   :root{
     --forstgruen:#154734; --sommergruen:#3e822c; --fruehlingsgruen:#91ae2d;
@@ -84,54 +84,59 @@
 <div class="wrap">
   <header>
     <div class="logo"><span class="dot"></span> Instagram Beitrag einreichen</div>
-    <p>Beitragsvorschlag an die ÖA senden</p>
+    <p>Beitragsvorschlag an die OEA senden</p>
   </header>
 
   <div class="card">
     <div class="stripe"></div>
-    <form id="form" novalidate>
+    <!-- Formular nutzt nun den direkten POST-Weg mit enctype für Anhänge -->
+    <form id="form" method="POST" enctype="multipart/form-data" novalidate>
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_captcha" value="false">
+
       <div class="field">
         <label for="name">Dein Name <b>*</b></label>
-        <input id="name" required placeholder="Vor- und Nachname">
+        <input id="name" name="Name" required placeholder="Vor- und Nachname">
       </div>
       <div class="field">
         <label for="titel">Titel / Thema <b>*</b></label>
-        <input id="titel" required placeholder="Worum geht es in Kürze?">
+        <input id="titel" name="Titel / Thema" required placeholder="Worum geht es in Kurze?">
       </div>
       <div class="field">
         <label for="text">Textvorschlag / Beschreibung <b>*</b></label>
-        <textarea id="text" required placeholder="Was soll im Beitrag stehen? Wichtige Fakten, Termine, Zitate..."></textarea>
+        <textarea id="text" name="Textvorschlag" required placeholder="Was soll im Beitrag stehen? Wichtige Fakten, Termine, Zitate..."></textarea>
       </div>
       <div class="field">
         <label for="termin">Wunsch-Veröffentlichung</label>
-        <input id="termin" type="date">
+        <input id="termin" name="Wunschtermin" type="date">
       </div>
       <div class="field">
         <label>Bilder / Videos <b>*</b></label>
         <div class="drop" id="drop">
           <strong>Dateien hierher ziehen</strong> oder klicken zum Auswählen
-          <small>JPG, PNG, MP4 · bis 10 MB pro Datei · mehrere möglich</small>
+          <small>JPG, PNG, MP4 bis 10 MB pro Datei · mehrere moglich</small>
         </div>
-        <input id="files" type="file" accept="image/*,video/*" multiple>
+        <!-- Wichtig: name="attachment" für FormSubmit -->
+        <input id="files" type="file" name="attachment" accept="image/*,video/*" multiple>
         <div class="previews" id="previews"></div>
         <div class="hint" id="count"></div>
       </div>
       <div class="field">
         <label class="check">
-          <input type="checkbox" id="ds" required>
+          <input type="checkbox" id="ds" name="Einwilligung abgebildete Personen" required>
           <span>Ich habe die Einwilligung aller abgebildeten Personen zur Veröffentlichung auf Social Media. <b style="color:var(--eichhornorange)">*</b></span>
         </label>
       </div>
       <div class="status" id="status"></div>
       <button class="submit" id="btn" type="submit">Beitrag absenden</button>
       <div class="privacy-note">
-        Weitere Informationen findest du in unserer <a href="/datenschutz" target="_blank">Datenschutzerklärung</a>.
+        Weitere Informationen findest du in unserer <a href="/datenschutz" target="_blank">Datenschutzerklarung</a>.
       </div>
     </form>
 
     <div class="success" id="success">
-      <h2>Vielen Dank! 🌲</h2>
-      <p>Dein Beitragsvorschlag wurde an die ÖÄ gesendet –<br>mit allen Angaben und Bildern/Videos als E-Mail-Anhang.</p>
+      <h2>Vielen Dank!</h2>
+      <p>Dein Beitragsvorschlag wurde an die OEA gesendet –<br>mit allen Angaben und Bildern/Videos als E-Mail-Anhang.</p>
       <br>
       <button class="submit" onclick="location.reload()" style="max-width:280px;">Weiteren Beitrag einreichen</button>
     </div>
@@ -140,10 +145,9 @@
 
 <script>
 /* ============================================================
-   E-MAIL DER ÖÄ
- 
+   HIER DIE E-MAIL DER OEA EINTRAGEN
    ============================================================ */
-const ZIEL_EMAIL = "daniel.schuh@lfoa-mv.de";
+const ZIEL_EMAIL = "oea@DEINEFIRMA.de";
 
 const MAX_MB = 10;
 const MAX_BYTES = MAX_MB * 1024 * 1024;
@@ -157,22 +161,40 @@ const statusEl = document.getElementById('status');
 const btn = document.getElementById('btn');
 let dateien = [];
 
+// Form action dynamisch setzen
+form.action = 'https://formsubmit.co/' + ZIEL_EMAIL;
+
 drop.addEventListener('click', () => fileInput.click());
 ['dragover','dragenter'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('over'); }));
 ['dragleave','drop'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove('over'); }));
-drop.addEventListener('drop', ev => hinzufuegen(ev.dataTransfer.files));
+drop.addEventListener('drop', ev => {
+  ev.preventDefault();
+  drop.classList.remove('over');
+  hinzufuegen(ev.dataTransfer.files);
+});
 fileInput.addEventListener('change', () => { hinzufuegen(fileInput.files); fileInput.value=''; });
 
 function hinzufuegen(liste){
   for (const f of liste){
-    if (f.size > MAX_BYTES){ alert('"'+f.name+'" ist größer als '+MAX_MB+' MB und wird übersprungen.'); continue; }
+    if (f.size > MAX_BYTES){ alert('"'+f.name+'" ist groesser als '+MAX_MB+' MB und wird ubersprungen.'); continue; }
     if ([...dateien].some(d => d.name === f.name && d.size === f.size)) continue;
     dateien.push(f);
   }
+  aktualisiereInputDateien();
   render();
 }
 
-function entfernen(i){ dateien.splice(i,1); render(); }
+function entfernen(i){ 
+  dateien.splice(i,1); 
+  aktualisiereInputDateien();
+  render(); 
+}
+
+function aktualisiereInputDateien(){
+  const dt = new DataTransfer();
+  dateien.forEach(f => dt.items.add(f));
+  fileInput.files = dt.files;
+}
 
 function render(){
   previews.innerHTML = '';
@@ -196,43 +218,29 @@ function render(){
     : '';
 }
 
-form.addEventListener('submit', async ev => {
-  ev.preventDefault();
+form.addEventListener('submit', ev => {
   statusEl.className = 'status'; statusEl.textContent = '';
-  if (!form.reportValidity()) return;
   if (dateien.length === 0){
+    ev.preventDefault();
     statusEl.className = 'status err';
-    statusEl.textContent = '⚠️ Bitte mindestens ein Bild oder Video anhängen.';
+    statusEl.textContent = 'Bitte mindestens ein Bild oder Video anhängen.';
     drop.scrollIntoView({behavior:'smooth', block:'center'});
     return;
   }
 
-  btn.disabled = true; btn.textContent = 'Wird gesendet…';
-
-  const wert = id => document.getElementById(id).value.trim();
-  const fd = new FormData();
-  fd.append('_subject', '📸 Beitragsvorschlag: ' + wert('titel'));
-  fd.append('_template', 'table');
-  fd.append('_captcha', 'false');
-  fd.append('_replyto', ''); // kann ggf. ergänzt werden
-  fd.append('Name', wert('name'));
-  fd.append('Titel / Thema', wert('titel'));
-  fd.append('Textvorschlag', wert('text'));
-  fd.append('Wunschtermin', wert('termin') || '–');
-  fd.append('Einwilligung abgebildete Personen', document.getElementById('ds').checked ? 'Ja' : 'Nein');
-  dateien.forEach(f => fd.append('attachment', f, f.name));
-
-  try {
-    const res = await fetch('https://formsubmit.co/ajax/' + ZIEL_EMAIL, { method:'POST', body: fd });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    form.style.display = 'none';
-    document.getElementById('success').style.display = 'block';
-    window.scrollTo({top:0, behavior:'smooth'});
-  } catch(e) {
-    statusEl.className='status err';
-    statusEl.textContent = 'Senden fehlgeschlagen – bitte erneut versuchen oder die ÖÄ direkt kontaktieren.';
-    btn.disabled = false; btn.textContent = 'Beitrag absenden';
+  // Betreff dynamisch als Hidden Input hinzufügen
+  let subjectInput = document.querySelector('input[name="_subject"]');
+  if (!subjectInput) {
+    subjectInput = document.createElement('input');
+    subjectInput.type = 'hidden';
+    subjectInput.name = '_subject';
+    form.appendChild(subjectInput);
   }
+  const titelVal = document.getElementById('titel').value.trim();
+  subjectInput.value = 'Beitragsvorschlag: ' + (titelVal || 'Ohne Titel');
+
+  btn.disabled = true; 
+  btn.textContent = 'Wird gesendet...';
 });
 </script>
 </body>
