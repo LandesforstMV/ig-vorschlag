@@ -10,7 +10,7 @@
     --schwarz:#2d2a26; --hellblau:#87b4c3; --sandgelb:#f6d44d;
     --eichhornorange:#c36015; --rindenbraun:#78482b;
     --bg:#f4f6f0; --card:#ffffff; --text:#2d2a26; --muted:#6b675f;
-    --err:#c0392b; --radius:12px;
+    --ok:#3e822c; --err:#c0392b; --radius:12px;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
@@ -31,19 +31,16 @@
   header p{color:var(--muted); font-size:.9rem; margin-top:4px;}
   .card{background:var(--card); border:1px solid #e2e6da; border-radius:var(--radius);
     padding:18px 18px; box-shadow:0 10px 35px rgba(21,71,52,.10);}
-  .grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-  @media(max-width:560px){.grid{grid-template-columns:1fr;} .card{padding:14px 12px;}}
-  .field{display:flex; flex-direction:column; gap:4px; margin-bottom:8px;}
-  .field.full{grid-column:1/-1;}
+  .field{display:flex; flex-direction:column; gap:4px; margin-bottom:10px;}
   label{font-size:.83rem; font-weight:600; color:var(--muted);}
   label b{color:var(--eichhornorange); font-weight:700;}
-  input,select,textarea{
+  input,textarea{
     background:#fbfdf9; border:1px solid #d5dccb; color:var(--text);
     border-radius:9px; padding:9px 12px; font-size:.93rem; outline:none; width:100%;
     transition:border-color .15s, box-shadow .15s;
   }
-  input:focus,select:focus,textarea:focus{border-color:var(--sommergruen); box-shadow:0 0 0 3px rgba(62,130,44,.16);}
-  textarea{min-height:90px; resize:vertical;}
+  input:focus,textarea:focus{border-color:var(--sommergruen); box-shadow:0 0 0 3px rgba(62,130,44,.16);}
+  textarea{min-height:100px; resize:vertical;}
   .drop{
     border:2px dashed #b9c6a8; border-radius:10px; padding:16px 12px; text-align:center;
     cursor:pointer; transition:.2s; color:var(--muted); font-size:.88rem; background:#fbfdf9;
@@ -60,7 +57,7 @@
     background:rgba(45,42,38,.75); color:#fff; cursor:pointer; font-size:.75rem; line-height:1;
   }
   .hint{font-size:.75rem; color:var(--muted); margin-top:4px;}
-  .check{display:flex; gap:8px; align-items:flex-start; font-size:.8rem; color:var(--muted); margin:2px 0 6px;}
+  .check{display:flex; gap:8px; align-items:flex-start; font-size:.8rem; color:var(--muted); margin:2px 0 8px;}
   .check input{width:17px; height:17px; margin-top:1px; accent-color:var(--sommergruen); flex:none;}
   button.submit{
     width:100%; padding:12px; border:none; border-radius:10px; cursor:pointer;
@@ -71,11 +68,15 @@
   }
   button.submit:hover{transform:translateY(-1px); box-shadow:0 6px 18px rgba(21,71,52,.34);}
   button.submit:disabled{opacity:.6; cursor:default; transform:none;}
-  .status{margin:8px 0 4px; text-align:center; font-size:.88rem; min-height:1.2em; color:var(--err); font-weight:600;}
+  .status{margin:10px 0 2px; text-align:center; font-size:.88rem; min-height:1.2em; font-weight:600;}
+  .status.err{color:var(--err);}
   .privacy-note{font-size:.75rem; color:var(--muted); text-align:center; margin-top:10px;}
   .privacy-note a{color:var(--sommergruen); text-decoration:underline;}
   .stripe{height:5px; border-radius:3px; margin-bottom:16px;
     background:linear-gradient(90deg,var(--fruehlingsgruen),var(--sommergruen),var(--forstgruen));}
+  .success{display:none; text-align:center; padding:30px 10px;}
+  .success h2{font-size:1.25rem; margin-bottom:8px; color:var(--forstgruen);}
+  .success p{color:var(--muted); font-size:.92rem; line-height:1.5;}
 </style>
 <base target="_blank">
 </head>
@@ -88,90 +89,85 @@
 
   <div class="card">
     <div class="stripe"></div>
-    <!-- Klassischer Netlify-Formular-Submit (kein AJAX) -->
-    <form id="form" name="beitrag-einreichen" method="POST" data-netlify="true"
-          enctype="multipart/form-data" action="/danke.html">
-      <input type="hidden" name="form-name" value="beitrag-einreichen">
-      <div class="grid">
-        <div class="field full">
-          <label for="titel">Titel / Thema <b>*</b></label>
-          <input id="titel" name="titel" required placeholder="Worum geht es in Kürze?">
+    <form id="form" novalidate>
+      <div class="field">
+        <label for="name">Dein Name <b>*</b></label>
+        <input id="name" required placeholder="Vor- und Nachname">
+      </div>
+      <div class="field">
+        <label for="titel">Titel / Thema <b>*</b></label>
+        <input id="titel" required placeholder="Worum geht es in Kürze?">
+      </div>
+      <div class="field">
+        <label for="text">Textvorschlag / Beschreibung <b>*</b></label>
+        <textarea id="text" required placeholder="Was soll im Beitrag stehen? Wichtige Fakten, Termine, Zitate..."></textarea>
+      </div>
+      <div class="field">
+        <label for="termin">Wunsch-Veröffentlichung</label>
+        <input id="termin" type="date">
+      </div>
+      <div class="field">
+        <label>Bilder / Videos <b>*</b></label>
+        <div class="drop" id="drop">
+          <strong>Dateien hierher ziehen</strong> oder klicken zum Auswählen
+          <small>JPG, PNG, MP4 · bis 10 MB pro Datei · mehrere möglich</small>
         </div>
-        <div class="field full">
-          <label for="text">Textvorschlag / Beschreibung <b>*</b></label>
-          <textarea id="text" name="text" required placeholder="Was soll im Beitrag stehen? Wichtige Fakten, Termine, Zitate..."></textarea>
-        </div>
-        <div class="field full">
-          <label for="termin">Wunsch-Veröffentlichung</label>
-          <input id="termin" name="termin" type="date">
-        </div>
-        <div class="field full">
-          <label>Bilder / Videos <b>*</b></label>
-          <div class="drop" id="drop">
-            <strong>Dateien hierher ziehen</strong> oder klicken zum Auswählen
-            <small>JPG, PNG, MP4 · max. 5 Dateien · zusammen max. 7 MB</small>
-          </div>
-          <!-- Netlify erlaubt nur EINE Datei pro Feld -> 5 einzelne Felder, JS verteilt die Auswahl -->
-          <input id="files" name="datei1" type="file" accept="image/*,video/*">
-          <input name="datei2" type="file" accept="image/*,video/*" class="hidden-file" aria-hidden="true" tabindex="-1">
-          <input name="datei3" type="file" accept="image/*,video/*" class="hidden-file" aria-hidden="true" tabindex="-1">
-          <input name="datei4" type="file" accept="image/*,video/*" class="hidden-file" aria-hidden="true" tabindex="-1">
-          <input name="datei5" type="file" accept="image/*,video/*" class="hidden-file" aria-hidden="true" tabindex="-1">
-          <div class="previews" id="previews"></div>
-          <div class="hint" id="count"></div>
-        </div>
-        <div class="field full">
-          <label class="check">
-            <input type="checkbox" name="ds_consent" required>
-            <span>Ich habe die Einwilligung aller abgebildeten Personen zur Veröffentlichung auf Social Media. <b style="color:var(--eichhornorange)">*</b></span>
-          </label>
-        </div>
+        <input id="files" type="file" accept="image/*,video/*" multiple>
+        <div class="previews" id="previews"></div>
+        <div class="hint" id="count"></div>
+      </div>
+      <div class="field">
+        <label class="check">
+          <input type="checkbox" id="ds" required>
+          <span>Ich habe die Einwilligung aller abgebildeten Personen zur Veröffentlichung auf Social Media. <b style="color:var(--eichhornorange)">*</b></span>
+        </label>
       </div>
       <div class="status" id="status"></div>
       <button class="submit" id="btn" type="submit">Beitrag absenden</button>
       <div class="privacy-note">
-        
+        Weitere Informationen findest du in unserer <a href="/datenschutz" target="_blank">Datenschutzerklärung</a>.
       </div>
     </form>
+
+    <div class="success" id="success">
+      <h2>Vielen Dank! 🌲</h2>
+      <p>Dein Beitragsvorschlag wurde an die ÖÄ gesendet –<br>mit allen Angaben und Bildern/Videos als E-Mail-Anhang.</p>
+      <br>
+      <button class="submit" onclick="location.reload()" style="max-width:280px;">Weiteren Beitrag einreichen</button>
+    </div>
   </div>
 </div>
 
 <script>
-/* Mehrere Dateien werden auf mehrere einzelne Datei-Felder verteilt,
-   weil Netlify pro Feld nur eine Datei akzeptiert.
-   Gesamtgröße-Limit: Netlify erlaubt max. 8 MB pro Request -> wir prüfen auf 7 MB. */
-const MAX_DATEIEN = 5;
-const MAX_GESAMT_MB = 7;
-const MAX_GESAMT = MAX_GESAMT_MB * 1024 * 1024;
+/* ============================================================
+   ⚠️ HIER DIE E-MAIL DER ÖÄ EINTRAGEN ⚠️
+   Beim allerersten echten Absenden schickt FormSubmit eine
+   Aktivierungs-Mail an diese Adresse – einmal Link klicken,
+   danach kommen alle Beiträge automatisch als E-Mail an.
+   ============================================================ */
+const ZIEL_EMAIL = "oea@DEINEFIRMA.de";
+
+const MAX_MB = 10;
+const MAX_BYTES = MAX_MB * 1024 * 1024;
 
 const form = document.getElementById('form');
 const drop = document.getElementById('drop');
 const fileInput = document.getElementById('files');
-const fileFelder = [fileInput, ...document.querySelectorAll('.hidden-file')];
 const previews = document.getElementById('previews');
 const count = document.getElementById('count');
 const statusEl = document.getElementById('status');
+const btn = document.getElementById('btn');
 let dateien = [];
-
-const dataTransferOk = (typeof DataTransfer !== 'undefined');
-const MB = b => (b/1024/1024).toFixed(1).replace('.', ',');
 
 drop.addEventListener('click', () => fileInput.click());
 ['dragover','dragenter'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('over'); }));
 ['dragleave','drop'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove('over'); }));
 drop.addEventListener('drop', ev => hinzufuegen(ev.dataTransfer.files));
-fileInput.addEventListener('change', () => {
-  hinzufuegen(fileInput.files);
-  if (dataTransferOk) fileInput.value = ''; // wird unten aus dem Array wiederhergestellt
-});
+fileInput.addEventListener('change', () => { hinzufuegen(fileInput.files); fileInput.value=''; });
 
 function hinzufuegen(liste){
   for (const f of liste){
-    if (dateien.length >= MAX_DATEIEN){
-      alert('Maximal ' + MAX_DATEIEN + ' Dateien möglich.');
-      break;
-    }
-    // Duplikate vermeiden
+    if (f.size > MAX_BYTES){ alert('"'+f.name+'" ist größer als '+MAX_MB+' MB und wird übersprungen.'); continue; }
     if ([...dateien].some(d => d.name === f.name && d.size === f.size)) continue;
     dateien.push(f);
   }
@@ -179,19 +175,6 @@ function hinzufuegen(liste){
 }
 
 function entfernen(i){ dateien.splice(i,1); render(); }
-
-/* Verteilt die Dateien aus dem Array auf die einzelnen Datei-Felder (1 Datei pro Feld) */
-function syncFiles(){
-  if (!dataTransferOk) return false;
-  try {
-    fileFelder.forEach((feld, idx) => {
-      const dt = new DataTransfer();
-      if (dateien[idx]) dt.items.add(dateien[idx]);
-      feld.files = dt.files;
-    });
-    return true;
-  } catch(e) { return false; }
-}
 
 function render(){
   previews.innerHTML = '';
@@ -211,34 +194,47 @@ function render(){
   });
   const gesamt = dateien.reduce((s,f) => s + f.size, 0);
   count.textContent = dateien.length
-    ? dateien.length + ' Datei(en) · ' + MB(gesamt) + ' MB von max. ' + MAX_GESAMT_MB + ' MB'
+    ? dateien.length + ' Datei(en) · ' + (gesamt/1024/1024).toFixed(1).replace('.',',') + ' MB'
     : '';
-  syncFiles();
 }
 
-/* VOR dem Absenden prüfen, dann nativen Submit weiterlaufen lassen */
-form.addEventListener('submit', function(ev){
-  statusEl.textContent = '';
-  if (dateien.length === 0 && (!fileInput.files || fileInput.files.length === 0)){
-    ev.preventDefault();
+form.addEventListener('submit', async ev => {
+  ev.preventDefault();
+  statusEl.className = 'status'; statusEl.textContent = '';
+  if (!form.reportValidity()) return;
+  if (dateien.length === 0){
+    statusEl.className = 'status err';
     statusEl.textContent = '⚠️ Bitte mindestens ein Bild oder Video anhängen.';
     drop.scrollIntoView({behavior:'smooth', block:'center'});
     return;
   }
-  const gesamt = dateien.reduce((s,f) => s + f.size, 0);
-  if (gesamt > MAX_GESAMT){
-    ev.preventDefault();
-    statusEl.textContent = '⚠️ Gesamtgröße ' + MB(gesamt) + ' MB – maximal ' + MAX_GESAMT_MB + ' MB möglich. Bitte Dateien verkleinern oder weniger auswählen.';
-    drop.scrollIntoView({behavior:'smooth', block:'center'});
-    return;
+
+  btn.disabled = true; btn.textContent = 'Wird gesendet…';
+
+  const wert = id => document.getElementById(id).value.trim();
+  const fd = new FormData();
+  fd.append('_subject', '📸 Beitragsvorschlag: ' + wert('titel'));
+  fd.append('_template', 'table');
+  fd.append('_captcha', 'false');
+  fd.append('_replyto', ''); // kann ggf. ergänzt werden
+  fd.append('Name', wert('name'));
+  fd.append('Titel / Thema', wert('titel'));
+  fd.append('Textvorschlag', wert('text'));
+  fd.append('Wunschtermin', wert('termin') || '–');
+  fd.append('Einwilligung abgebildete Personen', document.getElementById('ds').checked ? 'Ja' : 'Nein');
+  dateien.forEach(f => fd.append('attachment', f, f.name));
+
+  try {
+    const res = await fetch('https://formsubmit.co/ajax/' + ZIEL_EMAIL, { method:'POST', body: fd });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    form.style.display = 'none';
+    document.getElementById('success').style.display = 'block';
+    window.scrollTo({top:0, behavior:'smooth'});
+  } catch(e) {
+    statusEl.className='status err';
+    statusEl.textContent = 'Senden fehlgeschlagen – bitte erneut versuchen oder die ÖÄ direkt kontaktieren.';
+    btn.disabled = false; btn.textContent = 'Beitrag absenden';
   }
-  if (!syncFiles() && (dateien.length > 1 || dateien.length > 0 && (!fileInput.files || fileInput.files.length === 0))){
-    ev.preventDefault();
-    statusEl.textContent = '⚠️ Dein Browser unterstützt Mehrfachauswahl hier nicht – bitte Dateien einzeln per Klick im Feld auswählen.';
-    return;
-  }
-  document.getElementById('btn').disabled = true;
-  document.getElementById('btn').textContent = 'Wird gesendet…';
 });
 </script>
 </body>
